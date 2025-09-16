@@ -27,9 +27,7 @@ export function PerfilScreen() {
     setMostrarSenha(!mostrarSenha);
   };
 
-  const handleLogoPress = () => {
-    drawerNavigation.openDrawer();
-  };
+
 
   return (
     <KeyboardAvoidingView 
