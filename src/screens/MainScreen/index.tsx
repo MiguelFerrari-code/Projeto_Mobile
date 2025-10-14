@@ -53,7 +53,8 @@ export function MainScreen({ navigation }: MainScreenProps) {
         {/* Seus Medicamentos */}
         <View style={styles.medicamentosHeader}>
           <Text style={styles.medicamentosTitle}>Seus Medicamentos:</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
+            testID="add-button"
             style={styles.adicionarButton}
             onPress={handleAdicionarMedicamento}
           >
@@ -85,13 +86,15 @@ export function MainScreen({ navigation }: MainScreenProps) {
               </View>
 
               <View style={styles.medicamentoActions}>
-                <TouchableOpacity 
+                <TouchableOpacity
+                  testID={`edit-button-${medicamento.id}`}
                   style={styles.actionButton}
                   onPress={() => handleEditarMedicamento(medicamento.id)}
                 >
                   <Image source={lapisEditar} style={styles.actionImage} />
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
+                  testID={`delete-button-${medicamento.id}`}
                   style={styles.actionButton}
                   onPress={() => handleExcluirMedicamento(medicamento.id)}
                 >

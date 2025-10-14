@@ -1,59 +1,69 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react-native';
-import { MedicamentoProvider, useMedicamentos } from '../context/MedicamentoContext';
-import { Text } from 'react-native'; // Importar Text do react-native
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { MainScreen } from '../screens/MainScreen';
+import { AdicionarMedicamento } from '../screens/AdicionarMedicamento';
+import { EditarMedicamento } from '../screens/EditarMedicamento';
+import { MedicamentoProvider } from '../context/MedicamentoContext';
+import { AuthProvider } from '../context/auth';
 
-// Componente de teste para consumir o contexto
-const TestComponent = () => {
-  const { medicamentos, adicionarMedicamento, editarMedicamento, excluirMedicamento } = useMedicamentos();
+const Stack = createNativeStackNavigator();
 
-  return (
-    <>
-      <button onPress={() => adicionarMedicamento({ nome: 'Novo Medicamento', dosagem: '10mg', horario: '10:00', frequencia: '1x por dia', quantidade: '10/10', cor: '#FFFFFF' })} data-testid="add-button">Adicionar</button>
-      <button onPress={() => editarMedicamento({ id: 1, nome: 'Paracetamol Editado', dosagem: '500mg', horario: '08:00', frequencia: '3x por dia', quantidade: '3/30', cor: '#FFFFFF' })} data-testid="edit-button">Editar</button>
-      <button onPress={() => excluirMedicamento(1)} data-testid="delete-button">Excluir</button>
-      {
-        medicamentos.map(med => (
-          <Text key={med.id} data-testid={`medicamento-${med.id}`}>
-            {med.nome} - {med.dosagem}
-          </Text>
-        ))
-      }
-    </>
-  );
-};
+const AppNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Main" component={MainScreen} />
+    <Stack.Screen name="AdicionarMedicamento" component={AdicionarMedicamento} />
+    <Stack.Screen name="EditarMedicamento" component={EditarMedicamento} />
+  </Stack.Navigator>
+);
 
-describe('MedicamentoContext Integration Tests', () => {
-  it('should add a new medication', () => {
-    render(
-      <MedicamentoProvider>
-        <TestComponent />
-      </MedicamentoProvider>
+describe('Medicamento CRUD Integration', () => {
+  it('should perform the full CRUD cycle for a medicamento', async () => {
+    const { getByText, getByPlaceholderText, queryByText, findByText, getByTestId } = render(
+      <AuthProvider>
+        <MedicamentoProvider>
+          <NavigationContainer>
+            <AppNavigator />
+          </NavigationContainer>
+        </MedicamentoProvider>
+      </AuthProvider>
     );
 
-    fireEvent.press(screen.getByTestId('add-button'));
-    expect(screen.getByTestId('medicamento-4')).toHaveTextContent('Novo Medicamento - 10mg');
-  });
+    // CREATE
+    fireEvent.press(getByTestId('add-button'));
+    
+    await findByText('Adicionar Medicamento');
 
-  it('should edit an existing medication', () => {
-    render(
-      <MedicamentoProvider>
-        <TestComponent />
-      </MedicamentoProvider>
-    );
+    fireEvent.changeText(getByPlaceholderText('Ex: Paracetamol'), 'Ibuprofeno');
+    fireEvent.changeText(getByPlaceholderText('Ex: 500mg'), '600mg');
+    fireEvent.changeText(getByPlaceholderText('08:00'), '09:00');
+    fireEvent.changeText(getByPlaceholderText('24:00'), '12:00');
+    fireEvent.changeText(getByPlaceholderText('Ex: 01'), '2');
+    fireEvent.press(getByText('Salvar Medicamento'));
 
-    fireEvent.press(screen.getByTestId('edit-button'));
-    expect(screen.getByTestId('medicamento-1')).toHaveTextContent('Paracetamol Editado - 500mg');
-  });
+    // READ
+    await findByText('Ibuprofeno');
+    expect(getByText('Ibuprofeno')).toBeTruthy();
+    expect(getByText('600mg')).toBeTruthy();
 
-  it('should delete a medication', () => {
-    render(
-      <MedicamentoProvider>
-        <TestComponent />
-      </MedicamentoProvider>
-    );
+    // UPDATE
+    // The initial state has 3 medicines, so the new one will have id 4
+    fireEvent.press(getByTestId('edit-button-4'));
 
-    fireEvent.press(screen.getByTestId('delete-button'));
-    expect(screen.queryByTestId('medicamento-1')).toBeNull();
+    await findByText('Editar Medicamento');
+
+    fireEvent.changeText(getByPlaceholderText('Ex: Paracetamol'), 'Ibuprofeno Editado');
+    fireEvent.press(getByText('Salvar Medicamento'));
+
+    await findByText('Ibuprofeno Editado');
+    expect(queryByText('Ibuprofeno')).toBeNull();
+
+    // DELETE
+    fireEvent.press(getByTestId('delete-button-4'));
+
+    await waitFor(() => {
+      expect(queryByText('Ibuprofeno Editado')).toBeNull();
+    });
   });
 });

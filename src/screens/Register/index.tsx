@@ -106,7 +106,7 @@ export function Register({ navigation }: RegisterProps) {
         <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
-          placeholder="josemaria@gmail.com"
+          placeholder="seu@email.com"
           placeholderTextColor="#999"
           value={email}
           onChangeText={setEmail}
@@ -137,7 +137,7 @@ export function Register({ navigation }: RegisterProps) {
         <Text style={styles.label}>Confirmar senha</Text>
         <TextInput
           style={styles.input}
-          placeholder="********"
+          placeholder="Confirmar Senha"
           placeholderTextColor="#999"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
@@ -157,7 +157,7 @@ export function Register({ navigation }: RegisterProps) {
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation?.navigate('Login')}>
-          <Text style={styles.linkText}>Possuo cadastro&gt;</Text>
+          <Text style={styles.linkText}>Possuo cadastro</Text>
         </TouchableOpacity>
         </View>
       </ScrollView>
