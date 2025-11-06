@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import CameraModal from '../../components/CameraModal';
+import { Image as RNImage } from 'react-native';
 import { useMedicamentos } from '../../context/MedicamentoContext';
 import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { styles } from './styles';
@@ -16,7 +18,7 @@ export function EditarMedicamento({ navigation, route }: any) {
   const [horarioPrimeiraDose, setHorarioPrimeiraDose] = useState(medicamentoExistente?.horario || '');
   const [intervaloHora, setIntervaloHora] = useState(''); // Não temos intervalo no mock
   const [dosesPorDia, setDosesPorDia] = useState(medicamentoExistente?.frequencia.split('x')[0].trim() || '');
-  // Novos campos para quantidade
+  // Novos campos para quantidade e foto
   const [quantidadeTotal, setQuantidadeTotal] = useState(() => {
     if (medicamentoExistente?.quantidade) {
       const partes = medicamentoExistente.quantidade.split('/');
@@ -31,6 +33,8 @@ export function EditarMedicamento({ navigation, route }: any) {
     }
     return '';
   });
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [fotoUri, setFotoUri] = useState<string | null>(medicamentoExistente?.foto || null);
 
   useEffect(() => {
     if (medicamentoExistente) {
@@ -62,7 +66,8 @@ export function EditarMedicamento({ navigation, route }: any) {
       horario: horarioPrimeiraDose,
       frequencia: `${dosesPorDia}x por dia`,
       quantidade: `${quantidadeConsumida}/${quantidadeTotal}`,
-      cor: medicamentoExistente.cor
+      cor: medicamentoExistente.cor,
+      foto: fotoUri || undefined,
     });
     Alert.alert('Sucesso', 'Medicamento editado com sucesso!');
     navigation.goBack();
@@ -73,7 +78,11 @@ export function EditarMedicamento({ navigation, route }: any) {
   };
 
   const handleTirarFoto = () => {
-    Alert.alert('Foto', 'Funcionalidade de tirar foto será implementada');
+    setCameraVisible(true);
+  };
+
+  const handleFotoTirada = (uri: string) => {
+    setFotoUri(uri);
   };
 
   return (
@@ -105,11 +114,32 @@ export function EditarMedicamento({ navigation, route }: any) {
             <Image source={logoHeader} style={styles.logo} />
           </View>
 
-          {/* Botão Tirar Foto */}
-          <TouchableOpacity style={styles.fotoButton} onPress={handleTirarFoto}>
-            <Text style={styles.fotoIcon}>📷</Text>
-            <Text style={styles.fotoButtonText}>Tirar Foto do Medicamento</Text>
-          </TouchableOpacity>
+          {/* Foto ou botão de adicionar foto (padrão AdicionarMedicamento) */}
+          <View style={{ alignItems: 'center', marginVertical: 16 }}>
+            {fotoUri ? (
+              <View style={{ position: 'relative', width: 240, height: 240 }}>
+                <RNImage source={{ uri: fotoUri }} style={{ width: 240, height: 240, borderRadius: 16, borderWidth: 1, borderColor: '#E0E0E0' }} />
+                <TouchableOpacity
+                  style={styles.editPhotoButton}
+                  onPress={handleTirarFoto}
+                  accessibilityLabel="Editar foto"
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.editPhotoIcon}>📷</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.fotoButton} onPress={handleTirarFoto}>
+                <Text style={styles.fotoIcon}>📷</Text>
+                <Text style={styles.fotoButtonText}>Tirar Foto do Medicamento</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <CameraModal
+            visible={cameraVisible}
+            onClose={() => setCameraVisible(false)}
+            onPictureTaken={handleFotoTirada}
+          />
 
           {/* Formulário */}
           <View style={styles.inputContainer}>

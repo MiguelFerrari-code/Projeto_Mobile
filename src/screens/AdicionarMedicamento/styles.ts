@@ -1,3 +1,5 @@
+  // ...existing code...
+  // ...existing code...
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
@@ -101,6 +103,30 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     fontWeight: '500',
+  },
+  editPhotoButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  editPhotoIcon: {
+    width: 16,
+    height: 16,
+    tintColor: '#3478f6',
+    resizeMode: 'contain',
   },
   inputContainer: {
     marginBottom: 20,

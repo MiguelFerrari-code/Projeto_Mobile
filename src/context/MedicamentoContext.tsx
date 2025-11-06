@@ -9,6 +9,7 @@ interface Medicamento {
   frequencia: string;
   quantidade: string;
   cor: string;
+  foto?: string; // URI da foto do medicamento (opcional)
 }
 
 interface MedicamentoContextType {
