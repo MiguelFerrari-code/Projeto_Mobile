@@ -16,6 +16,21 @@ export function EditarMedicamento({ navigation, route }: any) {
   const [horarioPrimeiraDose, setHorarioPrimeiraDose] = useState(medicamentoExistente?.horario || '');
   const [intervaloHora, setIntervaloHora] = useState(''); // Não temos intervalo no mock
   const [dosesPorDia, setDosesPorDia] = useState(medicamentoExistente?.frequencia.split('x')[0].trim() || '');
+  // Novos campos para quantidade
+  const [quantidadeTotal, setQuantidadeTotal] = useState(() => {
+    if (medicamentoExistente?.quantidade) {
+      const partes = medicamentoExistente.quantidade.split('/');
+      return partes[1] || '';
+    }
+    return '';
+  });
+  const [quantidadeConsumida, setQuantidadeConsumida] = useState(() => {
+    if (medicamentoExistente?.quantidade) {
+      const partes = medicamentoExistente.quantidade.split('/');
+      return partes[0] || '';
+    }
+    return '';
+  });
 
   useEffect(() => {
     if (medicamentoExistente) {
@@ -23,6 +38,11 @@ export function EditarMedicamento({ navigation, route }: any) {
       setDosagem(medicamentoExistente.dosagem);
       setHorarioPrimeiraDose(medicamentoExistente.horario);
       setDosesPorDia(medicamentoExistente.frequencia.split('x')[0].trim());
+      if (medicamentoExistente.quantidade) {
+        const partes = medicamentoExistente.quantidade.split('/');
+        setQuantidadeConsumida(partes[0] || '');
+        setQuantidadeTotal(partes[1] || '');
+      }
     }
   }, [medicamentoExistente]);
 
@@ -31,15 +51,18 @@ export function EditarMedicamento({ navigation, route }: any) {
       Alert.alert('Erro', 'Medicamento não encontrado para edição.');
       return;
     }
-
+    if (!nomeMedicamento || !dosagem || !horarioPrimeiraDose || !dosesPorDia || !quantidadeConsumida || !quantidadeTotal) {
+      Alert.alert('Erro', 'Por favor, preencha todos os campos');
+      return;
+    }
     editarMedicamento({
       id: medicamentoExistente.id,
       nome: nomeMedicamento,
       dosagem: dosagem,
       horario: horarioPrimeiraDose,
       frequencia: `${dosesPorDia}x por dia`,
-      quantidade: medicamentoExistente.quantidade, // Manter a quantidade existente
-      cor: medicamentoExistente.cor // Manter a cor existente
+      quantidade: `${quantidadeConsumida}/${quantidadeTotal}`,
+      cor: medicamentoExistente.cor
     });
     Alert.alert('Sucesso', 'Medicamento editado com sucesso!');
     navigation.goBack();
@@ -136,6 +159,27 @@ export function EditarMedicamento({ navigation, route }: any) {
               placeholder="Ex: 01"
               value={dosesPorDia}
               onChangeText={setDosesPorDia}
+              keyboardType="numeric"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Quantidade Total na Cartela</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ex: 20"
+              value={quantidadeTotal}
+              onChangeText={setQuantidadeTotal}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Quantidade Consumida</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ex: 0"
+              value={quantidadeConsumida}
+              onChangeText={setQuantidadeConsumida}
               keyboardType="numeric"
             />
           </View>

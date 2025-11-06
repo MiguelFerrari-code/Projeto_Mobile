@@ -13,20 +13,21 @@ export function AdicionarMedicamento({ navigation }: any) {
   const [horarioPrimeiraDose, setHorarioPrimeiraDose] = useState('');
   const [intervaloHora, setIntervaloHora] = useState('');
   const [dosesPorDia, setDosesPorDia] = useState('');
+  const [quantidadeTotal, setQuantidadeTotal] = useState('');
+  const [quantidadeConsumida, setQuantidadeConsumida] = useState('');
 
   const handleSalvarMedicamento = () => {
-    if (!nomeMedicamento || !dosagem || !horarioPrimeiraDose || !intervaloHora || !dosesPorDia) {
+    if (!nomeMedicamento || !dosagem || !horarioPrimeiraDose || !intervaloHora || !dosesPorDia || !quantidadeTotal || !quantidadeConsumida) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos');
       return;
     }
-    
-        adicionarMedicamento({
+    adicionarMedicamento({
       nome: nomeMedicamento,
       dosagem: dosagem,
       horario: horarioPrimeiraDose,
       frequencia: `${dosesPorDia}x por dia`,
-      quantidade: '0/0', // Valor inicial, pode ser ajustado
-      cor: '#ffffffff' // Cor padrão, pode ser ajustado
+      quantidade: `${quantidadeConsumida}/${quantidadeTotal}`,
+      cor: '#ffffffff'
     });
     Alert.alert('Sucesso', 'Medicamento adicionado com sucesso!');
     navigation.goBack();
@@ -123,6 +124,27 @@ export function AdicionarMedicamento({ navigation }: any) {
               placeholder="Ex: 01"
               value={dosesPorDia}
               onChangeText={setDosesPorDia}
+              keyboardType="numeric"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Quantidade Total na Cartela</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ex: 20"
+              value={quantidadeTotal}
+              onChangeText={setQuantidadeTotal}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Quantidade Consumida</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ex: 0"
+              value={quantidadeConsumida}
+              onChangeText={setQuantidadeConsumida}
               keyboardType="numeric"
             />
           </View>

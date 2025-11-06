@@ -21,36 +21,7 @@ interface MedicamentoContextType {
 const MedicamentoContext = createContext<MedicamentoContextType | undefined>(undefined);
 
 export const MedicamentoProvider = ({ children }: { children: ReactNode }) => {
-  const [medicamentos, setMedicamentos] = useState<Medicamento[]>([
-    // Dados mock iniciais para demonstração
-    {
-      id: 1,
-      nome: 'Paracetamol',
-      dosagem: '500mg',
-      horario: '08:00',
-      frequencia: '3x por dia',
-      quantidade: '3/30',
-      cor: '#ffffffff'
-    },
-    {
-      id: 2,
-      nome: 'Paracetamol',
-      dosagem: '200mg',
-      horario: '12:00',
-      frequencia: '2x por dia',
-      quantidade: '12/20',
-      cor: '#ffffffff'
-    },
-    {
-      id: 3,
-      nome: 'Aspirina',
-      dosagem: '100mg',
-      horario: '20:00',
-      frequencia: '3x por dia',
-      quantidade: '12/20',
-      cor: '#ffffffff'
-    }
-  ]);
+  const [medicamentos, setMedicamentos] = useState<Medicamento[]>([]);
 
   const adicionarMedicamento = (novoMedicamento: Omit<Medicamento, 'id'>) => {
     const id = medicamentos.length > 0 ? Math.max(...medicamentos.map(m => m.id)) + 1 : 1;
