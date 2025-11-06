@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import CameraModal from '../../components/CameraModal';
 import { styles } from './styles';
 import { useAuth } from '../../context/auth';
 import { useNavigation } from '@react-navigation/native';
@@ -20,12 +21,29 @@ export function PerfilScreen() {
   const [senha, setSenha] = useState(user?.password || '');
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
+  // Novo estado para foto de perfil e modal da câmera
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [cameraVisible, setCameraVisible] = useState(false);
+
   const handleSair = () => {
     logout();
   };
 
   const toggleMostrarSenha = () => {
     setMostrarSenha(!mostrarSenha);
+  };
+
+  const handleOpenCamera = () => {
+    setCameraVisible(true);
+  };
+
+  const handlePhotoTaken = (uri: string) => {
+    setProfilePhoto(uri);
+    setCameraVisible(false);
+  };
+
+  const handleCloseCamera = () => {
+    setCameraVisible(false);
   };
 
   return (
@@ -45,13 +63,17 @@ export function PerfilScreen() {
         <View style={styles.perfilContainer}>
           <View style={styles.fotoPerfilContainer}>
             <View style={styles.fotoPerfil}>
-              <View style={styles.avatarIcon}>
-                <View style={styles.avatarCircle}>
-                  <View style={styles.avatarHead} />
-                  <View style={styles.avatarBody} />
+              {profilePhoto ? (
+                <Image source={{ uri: profilePhoto }} style={{ width: 100, height: 100, borderRadius: 50 }} />
+              ) : (
+                <View style={styles.avatarIcon}>
+                  <View style={styles.avatarCircle}>
+                    <View style={styles.avatarHead} />
+                    <View style={styles.avatarBody} />
+                  </View>
                 </View>
-              </View>
-              <TouchableOpacity style={styles.cameraButton}>
+              )}
+              <TouchableOpacity style={styles.cameraButton} onPress={handleOpenCamera} accessibilityLabel="Adicionar ou editar foto de perfil" accessibilityRole="button">
                 <Text style={styles.cameraIcon}>📷</Text>
               </TouchableOpacity>
             </View>
@@ -115,6 +137,11 @@ export function PerfilScreen() {
           </View>
         </View>
       </ScrollView>
+      <CameraModal
+        visible={cameraVisible}
+        onClose={handleCloseCamera}
+        onPictureTaken={handlePhotoTaken}
+      />
     </KeyboardAvoidingView>
   );
 }
