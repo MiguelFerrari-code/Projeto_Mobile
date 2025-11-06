@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { CameraView } from 'expo-camera';
+import { Ionicons } from '@expo/vector-icons';
 
 interface CameraModalProps {
   visible: boolean;
@@ -60,22 +61,50 @@ const CameraModal: React.FC<CameraModalProps> = ({ visible, onClose, onPictureTa
           flash={flash}
         />
         <View style={styles.overlay} pointerEvents="box-none">
-          <View style={styles.controlsContainer}>
-            <View style={styles.row}>
-              <TouchableOpacity style={styles.button} onPress={handleSwitchCamera}>
-                <Text style={styles.buttonText}>Câmera {type === 'back' ? 'Frontal' : 'Traseira'}</Text>
+          <View style={styles.controlsContainer} pointerEvents="box-none">
+              <View style={styles.topRow}>
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={handleSwitchCamera}
+                  accessibilityLabel="Alternar câmera"
+                  accessibilityRole="button"
+                >
+                  <Ionicons name={type === 'back' ? 'camera-reverse' : 'camera'} size={22} color="#fff" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={handleToggleFlash}
+                  accessibilityLabel="Alternar flash"
+                  accessibilityRole="button"
+                >
+                  <Ionicons
+                    name={
+                      flash === 'on'
+                        ? 'flash'
+                        : flash === 'auto'
+                        ? 'flash-outline'
+                        : 'flash-off'
+                    }
+                    size={22}
+                    color="#fff"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.captureButton, isTakingPicture && { opacity: 0.7 }]}
+                onPress={handleTakePicture}
+                disabled={isTakingPicture}
+                accessibilityLabel="Tirar foto"
+                accessibilityRole="button"
+              >
+                <View style={styles.captureInner} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={handleToggleFlash}>
-                <Text style={styles.buttonText}>{getFlashLabel()}</Text>
+
+              <TouchableOpacity style={styles.textButton} onPress={onClose} accessibilityLabel="Cancelar" accessibilityRole="button">
+                <Text style={styles.cancelText}>Cancelar</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.button} onPress={handleTakePicture} disabled={isTakingPicture}>
-              <Text style={styles.buttonText}>Tirar Foto</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={onClose}>
-              <Text style={styles.buttonText}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     </Modal>
@@ -109,14 +138,54 @@ const CameraModal: React.FC<CameraModalProps> = ({ visible, onClose, onPictureTa
         right: 0,
         alignItems: 'center',
         justifyContent: 'flex-end',
-        paddingBottom: 40,
-        backgroundColor: 'rgba(0,0,0,0.1)',
+        paddingBottom: 32,
+        backgroundColor: 'rgba(0,0,0,0.12)',
       },
       controlsContainer: {
         width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
       },
+      topRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '40%',
+        marginBottom: 12,
+      },
+      iconButton: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: 'rgba(0,0,0,0.45)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginHorizontal: 8,
+      },
+      captureButton: {
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        borderWidth: 4,
+        borderColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 8,
+        backgroundColor: 'transparent',
+      },
+      captureInner: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#fff',
+      },
+      textButton: {
+        marginTop: 8,
+      },
+      cancelText: {
+        color: '#fff',
+        fontSize: 16,
+      },
+      // legacy styles (kept for backward compatibility if referenced elsewhere)
       row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
