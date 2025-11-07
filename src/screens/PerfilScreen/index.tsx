@@ -1,27 +1,21 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import CameraModal from '../../components/CameraModal';
 import { styles } from './styles';
 import { useAuth } from '../../context/auth';
 import { useNavigation } from '@react-navigation/native';
 import { Header } from '../../components';
 
-// Importando as imagens
-const mainIcone = require('../../assets/mainicone.png');
-const mapaIcone = require('../../assets/mapaicone.png');
-const perfilIcone = require('../../assets/perfilicone.png');
-
 export function PerfilScreen() {
   const { user, logout } = useAuth();
   const drawerNavigation = useNavigation();
 
-  // Estados para os campos do formulário, inicializados com os dados do usuário
   const [nomeCompleto, setNomeCompleto] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [senha, setSenha] = useState(user?.password || '');
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
-  // Novo estado para foto de perfil e modal da câmera
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [cameraVisible, setCameraVisible] = useState(false);
 
@@ -47,14 +41,14 @@ export function PerfilScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <Header title="PERFIL" />
 
-      <ScrollView 
+      <ScrollView
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -67,14 +61,17 @@ export function PerfilScreen() {
                 <Image source={{ uri: profilePhoto }} style={{ width: 100, height: 100, borderRadius: 50 }} />
               ) : (
                 <View style={styles.avatarIcon}>
-                  <View style={styles.avatarCircle}>
-                    <View style={styles.avatarHead} />
-                    <View style={styles.avatarBody} />
-                  </View>
+                  <Ionicons name="person" size={64} color="#9E9E9E" />
                 </View>
               )}
-              <TouchableOpacity style={styles.cameraButton} onPress={handleOpenCamera} accessibilityLabel="Adicionar ou editar foto de perfil" accessibilityRole="button">
-                <Text style={styles.cameraIcon}>📷</Text>
+
+              <TouchableOpacity
+                style={styles.cameraButton}
+                onPress={handleOpenCamera}
+                accessibilityLabel="Adicionar ou editar foto de perfil"
+                accessibilityRole="button"
+              >
+                <Ionicons name="camera" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
           </View>
@@ -91,7 +88,7 @@ export function PerfilScreen() {
                 placeholder="Ex: Raimundo Donatto"
                 value={nomeCompleto}
                 onChangeText={setNomeCompleto}
-                editable={false} // Campo não editável
+                editable={false}
               />
             </View>
 
@@ -103,7 +100,7 @@ export function PerfilScreen() {
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
-                editable={false} // Campo não editável
+                editable={false}
               />
             </View>
 
@@ -115,19 +112,16 @@ export function PerfilScreen() {
                   placeholder="Ex: ****************"
                   value={senha}
                   onChangeText={setSenha}
-                  secureTextEntry={!mostrarSenha} // Alterna a visibilidade da senha
-                  editable={false} // Campo não editável
+                  secureTextEntry={!mostrarSenha}
+                  editable={false}
                 />
-                <TouchableOpacity
-                  style={styles.olhoButton}
-                  onPress={toggleMostrarSenha}
-                >
-                  <Text style={styles.olhoIcon}>{mostrarSenha ? '🙈' : '👁️'}</Text>
+                <TouchableOpacity style={styles.olhoButton} onPress={toggleMostrarSenha}>
+                  <Ionicons name={mostrarSenha ? 'eye-off' : 'eye'} size={22} color="#666" />
                 </TouchableOpacity>
               </View>
             </View>
 
-            <TouchableOpacity style={styles.editButton} onPress={() => console.log("Editar perfil")} >
+            <TouchableOpacity style={styles.editButton} onPress={() => console.log('Editar perfil')}>
               <Text style={styles.editButtonText}>Editar</Text>
             </TouchableOpacity>
 
@@ -137,11 +131,9 @@ export function PerfilScreen() {
           </View>
         </View>
       </ScrollView>
-      <CameraModal
-        visible={cameraVisible}
-        onClose={handleCloseCamera}
-        onPictureTaken={handlePhotoTaken}
-      />
+
+      <CameraModal visible={cameraVisible} onClose={handleCloseCamera} onPictureTaken={handlePhotoTaken} />
     </KeyboardAvoidingView>
   );
 }
+

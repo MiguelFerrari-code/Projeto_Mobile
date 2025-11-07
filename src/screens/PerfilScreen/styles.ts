@@ -112,8 +112,17 @@ export const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   cameraIcon: {
-    fontSize: 20,
-    color: '#FFFFFF',
+    fontSize: 0,
+    color: 'transparent',
+    position: 'absolute',
+    width: 0,
+    height: 0,
+    opacity: 0,
+  },
+  cameraIconOverlay: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
   },
   usuarioContainer: {
     flexDirection: 'row',
@@ -170,7 +179,11 @@ export const styles = StyleSheet.create({
     padding: 8,
   },
   olhoIcon: {
-    fontSize: 20,
+    fontSize: 0,
+    position: 'absolute',
+    width: 0,
+    height: 0,
+    opacity: 0,
   },
   editButton: {
     backgroundColor: '#4285F4',
