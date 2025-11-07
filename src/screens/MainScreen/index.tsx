@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Modal } from 'react-native';
 import { styles } from './styles';
 import { useAuth } from '../../context/auth';
 import { useMedicamentos } from '../../context/MedicamentoContext';
@@ -144,7 +144,7 @@ export function MainScreen({ navigation }: MainScreenProps) {
           ))}
         </View>
       {/* Modal de visualização de medicamento */}
-      {modalVisible && selectedMedicamento && (
+      {false && modalVisible && selectedMedicamento && (
         <View style={{
           position: 'absolute',
           top: 0,
@@ -211,6 +211,56 @@ export function MainScreen({ navigation }: MainScreenProps) {
           </View>
         </View>
       )}
+
+      {/* Novo modal centralizado para visualizar medicamento */}
+      <Modal
+        visible={modalVisible && !!selectedMedicamento}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalBackdrop}>
+          {selectedMedicamento && (
+            <View style={styles.modalCard}>
+              {(selectedMedicamento.fotoUri || selectedMedicamento.foto || selectedMedicamento.imagem) ? (
+                <Image
+                  source={{ uri: selectedMedicamento.fotoUri || selectedMedicamento.foto || selectedMedicamento.imagem }}
+                  style={styles.modalImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.modalImagePlaceholder}>
+                  <Text style={{ color: '#bbb', fontSize: 32 }}>📷</Text>
+                </View>
+              )}
+
+              <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 18, color: '#222', textAlign: 'center' }}>
+                {selectedMedicamento.nome}
+              </Text>
+
+              <View style={{ width: '100%', marginBottom: 10, alignItems: 'center' }}>
+                <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'center' }}>
+                  <Text style={{ fontWeight: 'bold', color: '#4285F4' }}>Dosagem: </Text>{selectedMedicamento.dosagem}
+                </Text>
+                <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'center' }}>
+                  <Text style={{ fontWeight: 'bold', color: '#4285F4' }}>Horário: </Text>{selectedMedicamento.horario}
+                </Text>
+                <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'center' }}>
+                  <Text style={{ fontWeight: 'bold', color: '#4285F4' }}>Frequência: </Text>{selectedMedicamento.frequencia}
+                </Text>
+                <Text style={{ fontSize: 16, marginBottom: 8, textAlign: 'center' }}>
+                  <Text style={{ fontWeight: 'bold', color: '#4285F4' }}>Quantidade: </Text>{selectedMedicamento.quantidade}
+                </Text>
+              </View>
+
+              <TouchableOpacity onPress={handleCloseModal} style={styles.modalCloseButton}>
+                <Text style={styles.modalCloseText}>Fechar</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </Modal>
+
       </ScrollView>
     </View>
   );
