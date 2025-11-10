@@ -53,9 +53,9 @@ export function Register({ navigation }: RegisterProps) {
     setIsLoading(true);
 
     try {
-      const success = await register(fullName, email, password);
+      const result = await register(fullName, email, password);
       
-      if (success) {
+      if (result.success) {
         // Alerta personalizado com "Atenção" e redirecionamento
         Alert.alert(
           'Atenção',
@@ -66,7 +66,7 @@ export function Register({ navigation }: RegisterProps) {
           { cancelable: false }
         );
       } else {
-        Alert.alert('Erro', 'Este email já está cadastrado');
+        Alert.alert('Erro', result.error ?? 'Não foi possível realizar o cadastro.');
       }
     } catch (error) {
       Alert.alert('Erro', 'Ocorreu um erro durante o cadastro');

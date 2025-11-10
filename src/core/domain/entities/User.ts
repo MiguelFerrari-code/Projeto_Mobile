@@ -7,16 +7,17 @@ export class User {
     readonly id: string,
     readonly name: Name,
     readonly email: Email,
-    readonly password: Password
+    readonly password: Password,
+    readonly avatarUrl?: string
   ) {}
 
   static create(
     id: string,
     name: Name,
     email: Email,
-    password: Password
+    password: Password,
+    avatarUrl?: string
   ): User {
-    return new User(id, name, email, password);
+    return new User(id, name, email, password, avatarUrl);
   }
 }
-

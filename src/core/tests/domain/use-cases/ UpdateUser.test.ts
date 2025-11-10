@@ -19,16 +19,13 @@ describe("UpdateUser", () => {
 
     await userRepository.save(user);
 
-    const updatedUser = User.create(
-      "1",
-      Name.create("Updated User"),
-      Email.create("updated@example.com"),
-      Password.create("newpassword123")
-    );
+    const result = await updateUser.execute("1", {
+      name: "Updated User",
+      email: "updated@example.com",
+      password: "newpassword123",
+    });
 
-    await expect(updateUser.execute(updatedUser)).resolves.not.toThrow();
-    const foundUser = await userRepository.findById("1");
-    expect(foundUser?.name.value).toBe("Updated User");
-    expect(foundUser?.email.value).toBe("updated@example.com");
+    expect(result.name.value).toBe("Updated User");
+    expect(result.email.value).toBe("updated@example.com");
   });
 });

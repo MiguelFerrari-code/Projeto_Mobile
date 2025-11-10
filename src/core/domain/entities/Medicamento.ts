@@ -1,10 +1,12 @@
 export interface Medicamento {
   id: string;
+  usuarioId: string;
   nome: string;
   dosagem: string;
   horario: string;
   frequencia: string;
-  quantidade: string;
+  quantidadeConsumida: number;
+  quantidadeTotal: number;
   cor: string;
+  fotoUri?: string;
 }
-

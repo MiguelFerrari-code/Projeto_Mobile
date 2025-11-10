@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import CameraModal from '../../components/CameraModal';
 import { styles } from './styles';
 import { useAuth } from '../../context/auth';
 import { useNavigation } from '@react-navigation/native';
 import { Header } from '../../components';
+import { useImageUpload } from '../../hooks/useImageUpload';
 
 export function PerfilScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const drawerNavigation = useNavigation();
+  const { uploadFromUri, uploading } = useImageUpload('user-uploads', 'avatars');
 
   const [nomeCompleto, setNomeCompleto] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [senha, setSenha] = useState(user?.password || '');
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(user?.avatarUrl ?? null);
   const [cameraVisible, setCameraVisible] = useState(false);
+  const [isSavingPhoto, setIsSavingPhoto] = useState(false);
 
   const handleSair = () => {
     logout();
@@ -31,9 +34,29 @@ export function PerfilScreen() {
     setCameraVisible(true);
   };
 
-  const handlePhotoTaken = (uri: string) => {
-    setProfilePhoto(uri);
-    setCameraVisible(false);
+  const handlePhotoTaken = async (uri: string) => {
+    if (!user) {
+      return;
+    }
+
+    setIsSavingPhoto(true);
+
+    try {
+      const { publicUrl } = await uploadFromUri(uri, 'user-uploads', 'avatars');
+      const success = await updateProfile({ avatarUrl: publicUrl });
+
+      if (!success) {
+        throw new Error('Falha ao atualizar perfil.');
+      }
+
+      setProfilePhoto(publicUrl);
+    } catch (error) {
+      console.error('Erro ao salvar foto de perfil:', error);
+      Alert.alert('Erro', 'Não foi possível salvar a foto de perfil. Tente novamente.');
+    } finally {
+      setIsSavingPhoto(false);
+      setCameraVisible(false);
+    }
   };
 
   const handleCloseCamera = () => {
@@ -70,8 +93,13 @@ export function PerfilScreen() {
                 onPress={handleOpenCamera}
                 accessibilityLabel="Adicionar ou editar foto de perfil"
                 accessibilityRole="button"
+                disabled={uploading || isSavingPhoto}
               >
-                <Ionicons name="camera" size={20} color="#FFFFFF" />
+                {uploading || isSavingPhoto ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Ionicons name="camera" size={20} color="#FFFFFF" />
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -136,4 +164,3 @@ export function PerfilScreen() {
     </KeyboardAvoidingView>
   );
 }
-

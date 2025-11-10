@@ -2,14 +2,16 @@ export class Password {
   private constructor(readonly value: string) {}
 
   static create(password: string): Password {
-    if (!this.validate(password)) {
+    const normalized = password.trim();
+
+    if (!this.validate(normalized)) {
       throw new Error("Invalid password");
     }
-    return new Password(password);
+
+    return new Password(normalized);
   }
 
   private static validate(password: string): boolean {
-    return password.length >= 8;
+    return password.length >= 6;
   }
 }
-

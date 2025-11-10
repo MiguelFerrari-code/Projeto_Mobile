@@ -21,21 +21,27 @@ describe('ListarMedicamentos', () => {
     const medicamentos: Medicamento[] = [
       {
         id: '1',
+        usuarioId: 'user-1',
         nome: 'Paracetamol',
         dosagem: '500mg',
         horario: '08:00',
         frequencia: 'A cada 8 horas',
-        quantidade: '1 comprimido',
+        quantidadeConsumida: 1,
+        quantidadeTotal: 30,
         cor: 'Branco',
+        fotoUri: undefined,
       },
       {
         id: '2',
+        usuarioId: 'user-2',
         nome: 'Ibuprofeno',
         dosagem: '200mg',
         horario: '12:00',
         frequencia: 'A cada 6 horas',
-        quantidade: '1 comprimido',
+        quantidadeConsumida: 1,
+        quantidadeTotal: 20,
         cor: 'Branco',
+        fotoUri: undefined,
       },
     ];
 

@@ -14,12 +14,15 @@ describe("ExcluirMedicamento", () => {
   it("should delete an existing medicamento", async () => {
     const medicamento: Medicamento = {
       id: "1",
+      usuarioId: "user-1",
       nome: "Paracetamol",
       dosagem: "500mg",
       horario: "08:00",
       frequencia: "3x por dia",
-      quantidade: "3/30",
+      quantidadeConsumida: 3,
+      quantidadeTotal: 30,
       cor: "#ffffffff",
+      fotoUri: undefined,
     };
     await mockMedicamentoRepository.save(medicamento);
 
@@ -29,4 +32,3 @@ describe("ExcluirMedicamento", () => {
     expect(foundMedicamento).toBeNull();
   });
 });
-

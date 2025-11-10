@@ -11,12 +11,15 @@ describe('MockMedicamentoRepository', () => {
   it('should save a medicamento', async () => {
     const medicamento: Medicamento = {
       id: '1',
+      usuarioId: 'user-1',
       nome: 'Paracetamol',
       dosagem: '500mg',
       horario: '08:00',
       frequencia: 'A cada 8 horas',
-      quantidade: '1 comprimido',
+      quantidadeConsumida: 1,
+      quantidadeTotal: 30,
       cor: 'Branco',
+      fotoUri: undefined,
     };
 
     await repository.save(medicamento);
@@ -28,21 +31,27 @@ describe('MockMedicamentoRepository', () => {
   it('should find all medicamentos', async () => {
     const medicamento1: Medicamento = {
       id: '1',
+      usuarioId: 'user-1',
       nome: 'Paracetamol',
       dosagem: '500mg',
       horario: '08:00',
       frequencia: 'A cada 8 horas',
-      quantidade: '1 comprimido',
+      quantidadeConsumida: 1,
+      quantidadeTotal: 30,
       cor: 'Branco',
+      fotoUri: undefined,
     };
     const medicamento2: Medicamento = {
       id: '2',
+      usuarioId: 'user-2',
       nome: 'Ibuprofeno',
       dosagem: '200mg',
       horario: '12:00',
       frequencia: 'A cada 6 horas',
-      quantidade: '1 comprimido',
+      quantidadeConsumida: 1,
+      quantidadeTotal: 20,
       cor: 'Branco',
+      fotoUri: undefined,
     };
 
     await repository.save(medicamento1);
@@ -57,12 +66,15 @@ describe('MockMedicamentoRepository', () => {
   it('should update a medicamento', async () => {
     const medicamento: Medicamento = {
       id: '1',
+      usuarioId: 'user-1',
       nome: 'Paracetamol',
       dosagem: '500mg',
       horario: '08:00',
       frequencia: 'A cada 8 horas',
-      quantidade: '1 comprimido',
+      quantidadeConsumida: 1,
+      quantidadeTotal: 30,
       cor: 'Branco',
+      fotoUri: undefined,
     };
 
     await repository.save(medicamento);
@@ -77,12 +89,15 @@ describe('MockMedicamentoRepository', () => {
   it('should delete a medicamento', async () => {
     const medicamento: Medicamento = {
       id: '1',
+      usuarioId: 'user-1',
       nome: 'Paracetamol',
       dosagem: '500mg',
       horario: '08:00',
       frequencia: 'A cada 8 horas',
-      quantidade: '1 comprimido',
+      quantidadeConsumida: 1,
+      quantidadeTotal: 30,
       cor: 'Branco',
+      fotoUri: undefined,
     };
 
     await repository.save(medicamento);

@@ -5,13 +5,10 @@ import { useAuth } from '../../context/auth';
 import { useMedicamentos } from '../../context/MedicamentoContext';
 import { useNavigation } from '@react-navigation/native';
 import { Header } from '../../components';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 // Importando as imagens
 const perfilIcone = require('../../assets/perfilicone.png');
-const notificacaoSino = require('../../assets/notificacaoSino.png');
-const relogioIcone = require('../../assets/relogio.png');
-const lapisEditar = require('../../assets/lapisEditar.png');
-const lixeiraIcone = require('../../assets/Lixeira.png');
 const mainIcone = require('../../assets/mainicone.png');
 const mapaIcone = require('../../assets/mapaicone.png');
 
@@ -110,13 +107,13 @@ export function MainScreen({ navigation }: MainScreenProps) {
             >
               <View style={styles.medicamentoInfo}>
                 <View style={styles.medicamentoIconContainer}>
-                  <Image source={notificacaoSino} style={styles.medicamentoIcon} />
+                  <Ionicons name="notifications-outline" size={24} color="#1E88E5" />
                 </View>
                 <View style={styles.medicamentoDetails}>
                   <Text style={styles.medicamentoNome}>{medicamento.nome}</Text>
                   <Text style={styles.medicamentoDosagem}>{medicamento.dosagem}</Text>
                   <View style={styles.medicamentoHorario}>
-                    <Image source={relogioIcone} style={styles.horarioIcon} />
+                    <Ionicons name="time-outline" size={18} color="#666" style={styles.horarioIcon} />
                     <Text style={styles.horarioText}>
                       {medicamento.horario} ({medicamento.frequencia})
                     </Text>
@@ -130,14 +127,14 @@ export function MainScreen({ navigation }: MainScreenProps) {
                   style={styles.actionButton}
                   onPress={() => handleEditarMedicamento(medicamento.id)}
                 >
-                  <Image source={lapisEditar} style={styles.actionImage} />
+                  <Ionicons name="create-outline" size={22} color="#1E88E5" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   testID={`delete-button-${medicamento.id}`}
                   style={styles.actionButton}
                   onPress={() => handleExcluirMedicamento(medicamento.id)}
                 >
-                  <Image source={lixeiraIcone} style={styles.actionImage} />
+                  <Ionicons name="trash-outline" size={22} color="#E53935" />
                 </TouchableOpacity>
               </View>
             </TouchableOpacity>
@@ -265,5 +262,3 @@ export function MainScreen({ navigation }: MainScreenProps) {
     </View>
   );
 }
-
-

@@ -1,99 +1,120 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useMemo, useState, ReactNode } from 'react';
+import { makeUserUseCases } from '../core/factories/MakeUserUseCases';
+import { User as DomainUser } from '../core/domain/entities/User';
 
-// Tipos para o contexto de autenticação
-interface User {
+interface AuthUser {
   id: string;
   email: string;
   name: string;
-  password?: string; // Adicionado para permitir a exibição da senha no perfil (apenas para mock)
+  password?: string;
+  avatarUrl?: string;
 }
 
 interface AuthContextData {
-  user: User | null;
+  user: AuthUser | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  updateProfile: (data: Partial<Pick<AuthUser, 'name' | 'email' | 'password' | 'avatarUrl'>>) => Promise<boolean>;
 }
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Credenciais mock hardcoded
-const MOCK_USERS = [
-  {
-    id: '1',
-    name: 'João Silva',
-    email: 'joao@email.com',
-    password: '123456'
-  },
-  {
-    id: '2',
-    name: 'Maria Santos',
-    email: 'maria@email.com',
-    password: 'senha123'
-  },
-  {
-    id: '3',
-    name: 'Pedro Oliveira',
-    email: 'pedro@email.com',
-    password: 'minhasenha'
-  }
-];
-
-// Criar o contexto
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
-// Provider do contexto de autenticação
+function mapDomainUserToAuthUser(user: DomainUser): AuthUser {
+  return {
+    id: user.id,
+    name: user.name.value,
+    email: user.email.value,
+    password: user.password.value,
+    avatarUrl: user.avatarUrl,
+  };
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const userUseCases = useMemo(() => makeUserUseCases(), []);
 
-  // Função de login mock
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simular delay de requisição
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const domainUser = await userUseCases.loginUser.execute(email, password);
 
-    // Verificar credenciais mock
-    const foundUser = MOCK_USERS.find(
-      mockUser => mockUser.email === email && mockUser.password === password
-    );
+      if (!domainUser) {
+        return false;
+      }
 
-    if (foundUser) {
-      // const { password: _, ...userWithoutPassword } = foundUser; // Comentado para incluir a senha no mock
-      const userWithPassword = foundUser;
-      setUser(userWithPassword);
+      setUser(mapDomainUserToAuthUser(domainUser));
       return true;
+    } catch (error) {
+      console.error('Erro ao realizar login:', error);
+      return false;
     }
-
-    return false;
   };
 
-  // Função de logout
-  const logout = () => {
-    setUser(null);
+  const logout = async (): Promise<void> => {
+    try {
+      await userUseCases.logoutUser.execute();
+    } finally {
+      setUser(null);
+    }
   };
 
-  // Função de registro mock
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
-    // Simular delay de requisição
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  const register = async (
+    name: string,
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      await userUseCases.registerUser.execute({
+        name,
+        email,
+        password,
+      });
 
-    // Verificar se o email já existe
-    const emailExists = MOCK_USERS.some(mockUser => mockUser.email === email);
-    
-    if (emailExists) {
-      return false; // Email já existe
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao cadastrar usuario:', error);
+      let message = 'Ocorreu um erro durante o cadastro.';
+
+      if (error instanceof Error) {
+        const normalized = error.message.toLowerCase();
+
+        if (
+          normalized.includes('ja existe') ||
+          normalized.includes('já existe') ||
+          normalized.includes('already registered') ||
+          normalized.includes('usuario ja cadastrado') ||
+          normalized.includes('user already registered')
+        ) {
+          message = 'Este email já está cadastrado.';
+        } else {
+          message = error.message;
+        }
+      }
+
+      return { success: false, error: message };
+    }
+  };
+
+  const updateProfile = async (
+    data: Partial<Pick<AuthUser, 'name' | 'email' | 'password' | 'avatarUrl'>>
+  ): Promise<boolean> => {
+    if (!user) {
+      return false;
     }
 
-        // Adicionar o novo usuário ao array mock
-    MOCK_USERS.push({
-      id: String(MOCK_USERS.length + 1),
-      name,
-      email,
-      password,
-    });
-    return true; // Registro bem-sucedido
+    try {
+      const updatedUser = await userUseCases.updateUser.execute(user.id, data);
+      setUser(mapDomainUserToAuthUser(updatedUser));
+      return true;
+    } catch (error) {
+      console.error('Erro ao atualizar perfil do usuario:', error);
+      return false;
+    }
   };
 
   const isAuthenticated = !!user;
@@ -106,6 +127,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         login,
         logout,
         register,
+        updateProfile,
       }}
     >
       {children}
@@ -113,7 +135,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 }
 
-// Hook para usar o contexto de autenticação
 export function useAuth(): AuthContextData {
   const context = useContext(AuthContext);
 

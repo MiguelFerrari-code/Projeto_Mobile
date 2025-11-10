@@ -4,18 +4,24 @@ import { Name } from "../value-objects/Name";
 import { Email } from "../value-objects/Email";
 import { Password } from "../value-objects/Password";
 
+type RegisterUserParams = {
+  name: string;
+  email: string;
+  password: string;
+};
+
 export class RegisterUser {
   constructor(private userRepository: IUserRepository) {}
 
-  async execute(id: string, name: string, email: string, password: string): Promise<User> {
-    const existingUser = await this.userRepository.findByEmail(email);
-    if (existingUser) {
-      throw new Error("User with this email already exists");
-    }
+  async execute({ name, email, password }: RegisterUserParams): Promise<User> {
+    const parsedName = Name.create(name);
+    const parsedEmail = Email.create(email);
+    const parsedPassword = Password.create(password);
 
-    const user = User.create(id, Name.create(name), Email.create(email), Password.create(password));
-    await this.userRepository.save(user);
-    return user;
+    return this.userRepository.signUpUser({
+      name: parsedName.value,
+      email: parsedEmail.value,
+      password: parsedPassword.value,
+    });
   }
 }
-

@@ -16,67 +16,62 @@ describe('RegisterUser', () => {
       findById: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      loginUser: jest.fn(),
+      signUpUser: jest.fn(),
+      signOut: jest.fn(),
+      getCurrentUser: jest.fn(),
+      updateUser: jest.fn(),
     };
     registerUser = new RegisterUser(mockUserRepository);
   });
 
   it('should register a new user successfully', async () => {
-    const id = '1';
     const nameValue = 'Test User';
     const emailValue = 'test@example.com';
     const passwordValue = 'password123';
 
     const expectedUser = User.create(
-      id,
+      'generated-id',
       Name.create(nameValue),
       Email.create(emailValue),
       Password.create(passwordValue)
     );
 
-    mockUserRepository.save.mockResolvedValue(undefined);
+    mockUserRepository.signUpUser.mockResolvedValue(expectedUser);
 
-    const result = await registerUser.execute(id, nameValue, emailValue, passwordValue);
+    const result = await registerUser.execute({
+      name: nameValue,
+      email: emailValue,
+      password: passwordValue,
+    });
 
     expect(result).toEqual(expectedUser);
-    expect(mockUserRepository.save).toHaveBeenCalledWith(expectedUser);
+    expect(mockUserRepository.signUpUser).toHaveBeenCalledWith({
+      name: nameValue,
+      email: emailValue,
+      password: passwordValue,
+    });
   });
 
   it('should throw an error if name is invalid', async () => {
-    const id = '1';
-    const nameValue = ''; // Invalid name
-    const emailValue = 'test@example.com';
-    const passwordValue = 'password123';
-
-    await expect(registerUser.execute(id, nameValue, emailValue, passwordValue)).rejects.toThrow('Invalid name');
-    expect(mockUserRepository.save).not.toHaveBeenCalled();
+    await expect(
+      registerUser.execute({ name: '', email: 'test@example.com', password: 'password123' })
+    ).rejects.toThrow('Invalid name');
+    expect(mockUserRepository.signUpUser).not.toHaveBeenCalled();
   });
 
   it('should throw an error if email is invalid', async () => {
-    const id = '1';
-    const nameValue = 'Test User';
-    const emailValue = 'invalid-email'; // Invalid email
-    const passwordValue = 'password123';
-
-    await expect(registerUser.execute(id, nameValue, emailValue, passwordValue)).rejects.toThrow('Invalid email');
-    expect(mockUserRepository.save).not.toHaveBeenCalled();
+    await expect(
+      registerUser.execute({ name: 'Test', email: 'invalid-email', password: 'password123' })
+    ).rejects.toThrow('Invalid email');
+    expect(mockUserRepository.signUpUser).not.toHaveBeenCalled();
   });
 
-  it('should throw an error if a user with the same email already exists', async () => {
-    const id = '1';
-    const nameValue = 'Test User';
-    const emailValue = 'existing@example.com';
-    const passwordValue = 'password123';
+  it('should propagate repository errors', async () => {
+    mockUserRepository.signUpUser.mockRejectedValue(new Error('Repository error'));
 
-    const existingUser = User.create(
-      'existingId',
-      Name.create('Existing User'),
-      Email.create(emailValue),
-      Password.create(passwordValue)
-    );
-
-    mockUserRepository.findByEmail.mockResolvedValue(existingUser);
-
-    await expect(registerUser.execute(id, nameValue, emailValue, passwordValue)).rejects.toThrow('User with this email already exists');
-    expect(mockUserRepository.save).not.toHaveBeenCalled();
+    await expect(
+      registerUser.execute({ name: 'Test', email: 'test@example.com', password: 'password123' })
+    ).rejects.toThrow('Repository error');
   });
 });

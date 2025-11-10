@@ -10,12 +10,17 @@ export class LoginUser {
     const email = Email.create(emailValue);
     const password = Password.create(passwordValue);
 
-    const user = await this.userRepository.findByEmail(email.value);
+    try {
+      return await this.userRepository.loginUser({
+        email: email.value,
+        password: password.value,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Falha ao autenticar usuario')) {
+        return null;
+      }
 
-    if (user && user.password.value === password.value) {
-      return user;
+      throw error;
     }
-    return null;
   }
 }
-

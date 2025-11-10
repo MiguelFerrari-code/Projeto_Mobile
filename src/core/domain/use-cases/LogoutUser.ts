@@ -1,6 +1,9 @@
+import { IUserRepository } from "../repositories/IUserRepository";
+
 export class LogoutUser {
+  constructor(private userRepository: IUserRepository) {}
+
   async execute(): Promise<void> {
-    // Em uma aplicação real, isso lidaria com a invalidação de tokens, etc.
-    return Promise.resolve();
+    await this.userRepository.signOut();
   }
 }

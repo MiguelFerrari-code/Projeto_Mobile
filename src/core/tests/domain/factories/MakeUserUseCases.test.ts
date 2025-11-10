@@ -5,7 +5,6 @@ import { LogoutUser } from '../../../domain/use-cases/LogoutUser';
 import { UpdateUser } from '../../../domain/use-cases/UpdateUser';
 import { DeleteUser } from '../../../domain/use-cases/DeleteUser';
 import { FindUser } from '../../../domain/use-cases/FindUser';
-import { MockUserRepository } from '../../../infra/repositories/MockUserRepository';
 
 describe('makeUserUseCases', () => {
   it('should return an object with all user use cases', () => {
@@ -19,12 +18,12 @@ describe('makeUserUseCases', () => {
     expect(useCases).toHaveProperty('findUser');
   });
 
-  it('should instantiate RegisterUser with MockUserRepository', () => {
+  it('should instantiate RegisterUser', () => {
     const useCases = makeUserUseCases();
     expect(useCases.registerUser).toBeInstanceOf(RegisterUser);
   });
 
-  it('should instantiate LoginUser with MockUserRepository', () => {
+  it('should instantiate LoginUser', () => {
     const useCases = makeUserUseCases();
     expect(useCases.loginUser).toBeInstanceOf(LoginUser);
   });
@@ -34,38 +33,19 @@ describe('makeUserUseCases', () => {
     expect(useCases.logoutUser).toBeInstanceOf(LogoutUser);
   });
 
-  it('should instantiate UpdateUser with MockUserRepository', () => {
+  it('should instantiate UpdateUser', () => {
     const useCases = makeUserUseCases();
     expect(useCases.updateUser).toBeInstanceOf(UpdateUser);
   });
 
-  it('should instantiate DeleteUser with MockUserRepository', () => {
+  it('should instantiate DeleteUser', () => {
     const useCases = makeUserUseCases();
     expect(useCases.deleteUser).toBeInstanceOf(DeleteUser);
   });
 
-  it('should instantiate FindUser with MockUserRepository', () => {
+  it('should instantiate FindUser', () => {
     const useCases = makeUserUseCases();
     expect(useCases.findUser).toBeInstanceOf(FindUser);
   });
 
-  it('should use the same instance of MockUserRepository for use cases that require it', () => {
-    const useCases = makeUserUseCases();
-    const mockRepoInstance = new MockUserRepository(); // For type comparison
-
-    // Check if the repository is an instance of MockUserRepository
-    expect(useCases.registerUser['userRepository']).toBeInstanceOf(MockUserRepository);
-    expect(useCases.loginUser['userRepository']).toBeInstanceOf(MockUserRepository);
-    expect(useCases.updateUser['userRepository']).toBeInstanceOf(MockUserRepository);
-    expect(useCases.deleteUser['userRepository']).toBeInstanceOf(MockUserRepository);
-    expect(useCases.findUser['userRepository']).toBeInstanceOf(MockUserRepository);
-
-    // Verify they are the *same* instance
-    const repoFromRegister = useCases.registerUser['userRepository'];
-    expect(useCases.loginUser['userRepository']).toBe(repoFromRegister);
-    expect(useCases.updateUser['userRepository']).toBe(repoFromRegister);
-    expect(useCases.deleteUser['userRepository']).toBe(repoFromRegister);
-    expect(useCases.findUser['userRepository']).toBe(repoFromRegister);
-  });
 });
-
