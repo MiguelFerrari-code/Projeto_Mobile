@@ -5,9 +5,13 @@ import { ExcluirMedicamento } from '../domain/use-cases/ExcluirMedicamento';
 import { ListarMedicamentos } from '../domain/use-cases/ListarMedicamentos';
 import { ObterMedicamentoPorId } from '../domain/use-cases/ObterMedicamentoPorId';
 import { MockMedicamentoRepository } from '../infra/repositories/MockMedicamentoRepository';
+import { SupabaseMedicamentoRepository } from '../infra/repositories/supabase/supabaseMedicamentoRepository';
 
-export function makeMedicamentoUseCases() {
-  const medicamentoRepository: IMedicamentoRepository = new MockMedicamentoRepository();
+export function makeMedicamentoUseCases(
+  repository?: IMedicamentoRepository
+) {
+  const medicamentoRepository: IMedicamentoRepository =
+    repository ?? SupabaseMedicamentoRepository.getInstance();
 
   const adicionarMedicamento = new AdicionarMedicamento(medicamentoRepository);
   const editarMedicamento = new EditarMedicamento(medicamentoRepository);

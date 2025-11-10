@@ -2,14 +2,27 @@ import React, { useState, useEffect } from 'react';
 import CameraModal from '../../components/CameraModal';
 import { Image as RNImage } from 'react-native';
 import { useMedicamentos } from '../../context/MedicamentoContext';
-import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  TextInput,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import { styles } from './styles';
+import { useImageUpload } from '../../hooks/useImageUpload';
 
 // Importando as imagens
 const logoHeader = require('../../assets/LogoCadastro.png');
 
 export function EditarMedicamento({ navigation, route }: any) {
   const { medicamentos, editarMedicamento } = useMedicamentos();
+  const { uploadFromUri, uploading } = useImageUpload('medicamento_upload', 'medicamentos');
   const medicamentoId = route?.params?.medicamento?.id;
   const medicamentoExistente = medicamentos.find(med => med.id === medicamentoId);
 
@@ -17,40 +30,37 @@ export function EditarMedicamento({ navigation, route }: any) {
   const [dosagem, setDosagem] = useState(medicamentoExistente?.dosagem || '');
   const [horarioPrimeiraDose, setHorarioPrimeiraDose] = useState(medicamentoExistente?.horario || '');
   const [intervaloHora, setIntervaloHora] = useState(''); // Não temos intervalo no mock
-  const [dosesPorDia, setDosesPorDia] = useState(medicamentoExistente?.frequencia.split('x')[0].trim() || '');
-  // Novos campos para quantidade e foto
-  const [quantidadeTotal, setQuantidadeTotal] = useState(() => {
-    if (medicamentoExistente?.quantidade) {
-      const partes = medicamentoExistente.quantidade.split('/');
-      return partes[1] || '';
-    }
-    return '';
-  });
-  const [quantidadeConsumida, setQuantidadeConsumida] = useState(() => {
-    if (medicamentoExistente?.quantidade) {
-      const partes = medicamentoExistente.quantidade.split('/');
-      return partes[0] || '';
-    }
-    return '';
-  });
+  const [dosesPorDia, setDosesPorDia] = useState(
+    medicamentoExistente?.dosesDia || medicamentoExistente?.frequencia.split('x')[0]?.trim() || ''
+  );
+  const [quantidadeTotal, setQuantidadeTotal] = useState(
+    medicamentoExistente?.quantidadeTotal?.toString() || ''
+  );
+  const [quantidadeConsumida, setQuantidadeConsumida] = useState(
+    medicamentoExistente?.quantidadeConsumida?.toString() || ''
+  );
   const [cameraVisible, setCameraVisible] = useState(false);
-  const [fotoUri, setFotoUri] = useState<string | null>(medicamentoExistente?.foto || null);
+  const [fotoUri, setFotoUri] = useState<string | null>(medicamentoExistente?.fotoUri || null);
+  const [isLocalPhoto, setIsLocalPhoto] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const isProcessing = isSaving || uploading;
 
   useEffect(() => {
     if (medicamentoExistente) {
       setNomeMedicamento(medicamentoExistente.nome);
       setDosagem(medicamentoExistente.dosagem);
       setHorarioPrimeiraDose(medicamentoExistente.horario);
-      setDosesPorDia(medicamentoExistente.frequencia.split('x')[0].trim());
-      if (medicamentoExistente.quantidade) {
-        const partes = medicamentoExistente.quantidade.split('/');
-        setQuantidadeConsumida(partes[0] || '');
-        setQuantidadeTotal(partes[1] || '');
-      }
+      const frequenciaSplit = medicamentoExistente.frequencia.split('x')[0];
+      setDosesPorDia(medicamentoExistente.dosesDia || frequenciaSplit?.trim() || '');
+      setQuantidadeConsumida(medicamentoExistente.quantidadeConsumida.toString());
+      setQuantidadeTotal(medicamentoExistente.quantidadeTotal.toString());
+      setFotoUri(medicamentoExistente.fotoUri ?? null);
+      setIsLocalPhoto(false);
     }
   }, [medicamentoExistente]);
 
-  const handleSalvarMedicamento = () => {
+  const handleSalvarMedicamento = async () => {
     if (!medicamentoExistente) {
       Alert.alert('Erro', 'Medicamento não encontrado para edição.');
       return;
@@ -59,18 +69,39 @@ export function EditarMedicamento({ navigation, route }: any) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos');
       return;
     }
-    editarMedicamento({
-      id: medicamentoExistente.id,
-      nome: nomeMedicamento,
-      dosagem: dosagem,
-      horario: horarioPrimeiraDose,
-      frequencia: `${dosesPorDia}x por dia`,
-      quantidade: `${quantidadeConsumida}/${quantidadeTotal}`,
-      cor: medicamentoExistente.cor,
-      foto: fotoUri || undefined,
-    });
-    Alert.alert('Sucesso', 'Medicamento editado com sucesso!');
-    navigation.goBack();
+    setIsSaving(true);
+    try {
+      let fotoPublicUrl: string | undefined;
+
+      if (fotoUri) {
+        if (isLocalPhoto || fotoUri.startsWith('file:')) {
+          const { publicUrl } = await uploadFromUri(fotoUri);
+          fotoPublicUrl = publicUrl;
+        } else {
+          fotoPublicUrl = fotoUri;
+        }
+      }
+
+      await editarMedicamento(medicamentoExistente.id, {
+        nome: nomeMedicamento,
+        dosagem,
+        horario: horarioPrimeiraDose,
+        frequencia: `${dosesPorDia}x por dia`,
+        quantidadeConsumida: Number(quantidadeConsumida),
+        quantidadeTotal: Number(quantidadeTotal),
+        dosesDia: dosesPorDia,
+        fotoUri: fotoPublicUrl,
+        cor: medicamentoExistente.cor,
+      });
+      setIsLocalPhoto(false);
+      Alert.alert('Sucesso', 'Medicamento editado com sucesso!');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Erro ao editar medicamento:', error);
+      Alert.alert('Erro', 'Não foi possível atualizar o medicamento.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancelar = () => {
@@ -83,6 +114,7 @@ export function EditarMedicamento({ navigation, route }: any) {
 
   const handleFotoTirada = (uri: string) => {
     setFotoUri(uri);
+    setIsLocalPhoto(true);
   };
 
   return (
@@ -215,8 +247,16 @@ export function EditarMedicamento({ navigation, route }: any) {
           </View>
 
           {/* Botões */}
-          <TouchableOpacity style={styles.salvarButton} onPress={handleSalvarMedicamento}>
-            <Text style={styles.salvarButtonText}>Salvar Medicamento</Text>
+          <TouchableOpacity
+            style={[styles.salvarButton, isProcessing && { opacity: 0.7 }]}
+            onPress={handleSalvarMedicamento}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.salvarButtonText}>Salvar Medicamento</Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.cancelarButton} onPress={handleCancelar}>
@@ -227,4 +267,3 @@ export function EditarMedicamento({ navigation, route }: any) {
     </KeyboardAvoidingView>
   );
 }
-

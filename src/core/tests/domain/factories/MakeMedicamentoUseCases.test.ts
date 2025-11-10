@@ -7,8 +7,14 @@ import { ObterMedicamentoPorId } from '../../../domain/use-cases/ObterMedicament
 import { MockMedicamentoRepository } from '../../../infra/repositories/MockMedicamentoRepository';
 
 describe('makeMedicamentoUseCases', () => {
+  const buildUseCases = () => {
+    const repository = new MockMedicamentoRepository();
+    const useCases = makeMedicamentoUseCases(repository);
+    return { useCases, repository };
+  };
+
   it('should return an object with all medicamento use cases', () => {
-    const useCases = makeMedicamentoUseCases();
+    const { useCases } = buildUseCases();
 
     expect(useCases).toHaveProperty('adicionarMedicamento');
     expect(useCases).toHaveProperty('editarMedicamento');
@@ -18,36 +24,33 @@ describe('makeMedicamentoUseCases', () => {
   });
 
   it('should instantiate AdicionarMedicamento with MockMedicamentoRepository', () => {
-    const useCases = makeMedicamentoUseCases();
+    const { useCases } = buildUseCases();
     expect(useCases.adicionarMedicamento).toBeInstanceOf(AdicionarMedicamento);
     // Further checks could involve mocking the constructor to ensure the correct repository is passed
   });
 
   it('should instantiate EditarMedicamento with MockMedicamentoRepository', () => {
-    const useCases = makeMedicamentoUseCases();
+    const { useCases } = buildUseCases();
     expect(useCases.editarMedicamento).toBeInstanceOf(EditarMedicamento);
   });
 
   it('should instantiate ExcluirMedicamento with MockMedicamentoRepository', () => {
-    const useCases = makeMedicamentoUseCases();
+    const { useCases } = buildUseCases();
     expect(useCases.excluirMedicamento).toBeInstanceOf(ExcluirMedicamento);
   });
 
   it('should instantiate ListarMedicamentos with MockMedicamentoRepository', () => {
-    const useCases = makeMedicamentoUseCases();
+    const { useCases } = buildUseCases();
     expect(useCases.listarMedicamentos).toBeInstanceOf(ListarMedicamentos);
   });
 
   it('should instantiate ObterMedicamentoPorId with MockMedicamentoRepository', () => {
-    const useCases = makeMedicamentoUseCases();
+    const { useCases } = buildUseCases();
     expect(useCases.obterMedicamentoPorId).toBeInstanceOf(ObterMedicamentoPorId);
   });
 
   it('should use the same instance of MockMedicamentoRepository for all use cases', () => {
-    const useCases = makeMedicamentoUseCases();
-    // This is a simplified check. In a real scenario, you might mock the repository constructor
-    // to capture the instance and assert it's the same.
-    const mockRepoInstance = new MockMedicamentoRepository(); // Just for type comparison, not actual instance
+    const { useCases, repository } = buildUseCases();
     expect(useCases.adicionarMedicamento['medicamentoRepository']).toBeInstanceOf(MockMedicamentoRepository);
     expect(useCases.editarMedicamento['medicamentoRepository']).toBeInstanceOf(MockMedicamentoRepository);
     expect(useCases.excluirMedicamento['medicamentoRepository']).toBeInstanceOf(MockMedicamentoRepository);
@@ -56,10 +59,10 @@ describe('makeMedicamentoUseCases', () => {
 
     // Verify they are the *same* instance
     const repoFromAdicionar = useCases.adicionarMedicamento['medicamentoRepository'];
+    expect(repoFromAdicionar).toBe(repository);
     expect(useCases.editarMedicamento['medicamentoRepository']).toBe(repoFromAdicionar);
     expect(useCases.excluirMedicamento['medicamentoRepository']).toBe(repoFromAdicionar);
     expect(useCases.listarMedicamentos['medicamentoRepository']).toBe(repoFromAdicionar);
     expect(useCases.obterMedicamentoPorId['medicamentoRepository']).toBe(repoFromAdicionar);
   });
 });
-

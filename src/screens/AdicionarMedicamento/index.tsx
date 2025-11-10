@@ -3,14 +3,27 @@ import CameraModal from '../../components/CameraModal';
 import { Image as RNImage } from 'react-native';
 const editIcon = require('../../assets/lapisEditar.png');
 import { useMedicamentos } from '../../context/MedicamentoContext';
-import { View, Text, ScrollView, TouchableOpacity, Image, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  TextInput,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import { styles } from './styles';
+import { useImageUpload } from '../../hooks/useImageUpload';
 
 // Importando as imagens
 const logoHeader = require('../../assets/LogoCadastro.png');
 
 export function AdicionarMedicamento({ navigation }: any) {
   const { adicionarMedicamento } = useMedicamentos();
+  const { uploadFromUri, uploading } = useImageUpload('medicamento_upload', 'medicamentos');
   const [nomeMedicamento, setNomeMedicamento] = useState('');
   const [dosagem, setDosagem] = useState('');
   const [horarioPrimeiraDose, setHorarioPrimeiraDose] = useState('');
@@ -20,23 +33,43 @@ export function AdicionarMedicamento({ navigation }: any) {
   const [quantidadeConsumida, setQuantidadeConsumida] = useState('');
   const [cameraVisible, setCameraVisible] = useState(false);
   const [fotoUri, setFotoUri] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSalvarMedicamento = () => {
+  const isProcessing = isSaving || uploading;
+
+  const handleSalvarMedicamento = async () => {
     if (!nomeMedicamento || !dosagem || !horarioPrimeiraDose || !intervaloHora || !dosesPorDia || !quantidadeTotal || !quantidadeConsumida) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos');
       return;
     }
-    adicionarMedicamento({
-      nome: nomeMedicamento,
-      dosagem: dosagem,
-      horario: horarioPrimeiraDose,
-      frequencia: `${dosesPorDia}x por dia`,
-      quantidade: `${quantidadeConsumida}/${quantidadeTotal}`,
-      cor: '#ffffffff',
-      foto: fotoUri || undefined,
-    });
-    Alert.alert('Sucesso', 'Medicamento adicionado com sucesso!');
-    navigation.goBack();
+    setIsSaving(true);
+    try {
+      let fotoPublicUrl: string | undefined;
+
+      if (fotoUri) {
+        const { publicUrl } = await uploadFromUri(fotoUri);
+        fotoPublicUrl = publicUrl;
+      }
+
+      await adicionarMedicamento({
+        nome: nomeMedicamento,
+        dosagem,
+        horario: horarioPrimeiraDose,
+        frequencia: `${dosesPorDia}x por dia`,
+        quantidadeConsumida: Number(quantidadeConsumida),
+        quantidadeTotal: Number(quantidadeTotal),
+        dosesDia: dosesPorDia,
+        fotoUri: fotoPublicUrl,
+        cor: '#ffffffff',
+      });
+      Alert.alert('Sucesso', 'Medicamento adicionado com sucesso!');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Erro ao salvar medicamento:', error);
+      Alert.alert('Erro', 'Não foi possível salvar o medicamento. Tente novamente.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancelar = () => {
@@ -181,8 +214,16 @@ export function AdicionarMedicamento({ navigation }: any) {
           </View>
 
           {/* Botões */}
-          <TouchableOpacity style={styles.salvarButton} onPress={handleSalvarMedicamento}>
-            <Text style={styles.salvarButtonText}>Salvar Medicamento</Text>
+          <TouchableOpacity
+            style={[styles.salvarButton, isProcessing && { opacity: 0.7 }]}
+            onPress={handleSalvarMedicamento}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.salvarButtonText}>Salvar Medicamento</Text>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.cancelarButton} onPress={handleCancelar}>
@@ -193,4 +234,3 @@ export function AdicionarMedicamento({ navigation }: any) {
     </KeyboardAvoidingView>
   );
 }
-

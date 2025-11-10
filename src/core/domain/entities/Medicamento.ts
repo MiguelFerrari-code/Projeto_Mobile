@@ -7,6 +7,9 @@ export interface Medicamento {
   frequencia: string;
   quantidadeConsumida: number;
   quantidadeTotal: number;
+  dosesDia?: string;
   cor: string;
   fotoUri?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
