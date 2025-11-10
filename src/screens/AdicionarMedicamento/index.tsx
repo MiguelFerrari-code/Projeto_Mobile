@@ -20,6 +20,7 @@ import { useImageUpload } from '../../hooks/useImageUpload';
 
 // Importando as imagens
 const logoHeader = require('../../assets/LogoCadastro.png');
+const PLACEHOLDER_COLOR = '#9EA3B4';
 
 export function AdicionarMedicamento({ navigation }: any) {
   const { adicionarMedicamento } = useMedicamentos();
@@ -146,6 +147,7 @@ export function AdicionarMedicamento({ navigation }: any) {
             <TextInput
               style={styles.textInput}
               placeholder="Ex: Paracetamol"
+              placeholderTextColor={PLACEHOLDER_COLOR}
               value={nomeMedicamento}
               onChangeText={setNomeMedicamento}
             />
@@ -156,6 +158,7 @@ export function AdicionarMedicamento({ navigation }: any) {
             <TextInput
               style={styles.textInput}
               placeholder="Ex: 500mg"
+              placeholderTextColor={PLACEHOLDER_COLOR}
               value={dosagem}
               onChangeText={setDosagem}
             />
@@ -166,6 +169,7 @@ export function AdicionarMedicamento({ navigation }: any) {
             <TextInput
               style={styles.textInput}
               placeholder="08:00"
+              placeholderTextColor={PLACEHOLDER_COLOR}
               value={horarioPrimeiraDose}
               onChangeText={setHorarioPrimeiraDose}
             />
@@ -176,6 +180,7 @@ export function AdicionarMedicamento({ navigation }: any) {
             <TextInput
               style={styles.textInput}
               placeholder="24:00"
+              placeholderTextColor={PLACEHOLDER_COLOR}
               value={intervaloHora}
               onChangeText={setIntervaloHora}
             />
@@ -186,6 +191,7 @@ export function AdicionarMedicamento({ navigation }: any) {
             <TextInput
               style={styles.textInput}
               placeholder="Ex: 01"
+              placeholderTextColor={PLACEHOLDER_COLOR}
               value={dosesPorDia}
               onChangeText={setDosesPorDia}
               keyboardType="numeric"
@@ -197,6 +203,7 @@ export function AdicionarMedicamento({ navigation }: any) {
             <TextInput
               style={styles.textInput}
               placeholder="Ex: 20"
+              placeholderTextColor={PLACEHOLDER_COLOR}
               value={quantidadeTotal}
               onChangeText={setQuantidadeTotal}
               keyboardType="numeric"
@@ -207,6 +214,7 @@ export function AdicionarMedicamento({ navigation }: any) {
             <TextInput
               style={styles.textInput}
               placeholder="Ex: 0"
+              placeholderTextColor={PLACEHOLDER_COLOR}
               value={quantidadeConsumida}
               onChangeText={setQuantidadeConsumida}
               keyboardType="numeric"

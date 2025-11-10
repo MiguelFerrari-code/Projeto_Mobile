@@ -47,6 +47,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 10,
     fontSize: 16,
+    color: '#1F2933',
   },
   registerButton: {
     backgroundColor: '#4285F4',
