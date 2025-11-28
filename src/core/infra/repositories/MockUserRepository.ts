@@ -66,7 +66,10 @@ export class MockUserRepository implements IUserRepository {
       (this.users.length + 1).toString(),
       Name.create(name ?? 'User'),
       Email.create(email),
-      Password.create(password)
+      Password.create(password),
+      undefined,
+      null,
+      null
     );
 
     await this.save(user);
@@ -94,7 +97,9 @@ export class MockUserRepository implements IUserRepository {
       data.name ? Name.create(data.name) : user.name,
       data.email ? Email.create(data.email) : user.email,
       data.password ? Password.create(data.password) : user.password,
-      data.avatarUrl !== undefined ? data.avatarUrl ?? undefined : user.avatarUrl
+      data.avatarUrl !== undefined ? data.avatarUrl ?? undefined : user.avatarUrl,
+      data.latitude !== undefined ? data.latitude : user.latitude ?? null,
+      data.longitude !== undefined ? data.longitude : user.longitude ?? null
     );
 
     await this.update(updatedUser);

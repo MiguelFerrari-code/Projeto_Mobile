@@ -14,6 +14,8 @@ export type UpdateUserPayload = {
   email?: string;
   password?: string;
   avatarUrl?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 export interface IUserRepository {

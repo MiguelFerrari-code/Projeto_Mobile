@@ -1,6 +1,16 @@
-import React, { createContext, useContext, useMemo, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  ReactNode,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import { makeUserUseCases } from '../core/factories/MakeUserUseCases';
 import { User as DomainUser } from '../core/domain/entities/User';
+import * as Location from 'expo-location';
 
 interface AuthUser {
   id: string;
@@ -8,6 +18,8 @@ interface AuthUser {
   name: string;
   password?: string;
   avatarUrl?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 interface AuthContextData {
@@ -16,7 +28,9 @@ interface AuthContextData {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  updateProfile: (data: Partial<Pick<AuthUser, 'name' | 'email' | 'password' | 'avatarUrl'>>) => Promise<boolean>;
+  updateProfile: (
+    data: Partial<Pick<AuthUser, 'name' | 'email' | 'password' | 'avatarUrl' | 'latitude' | 'longitude'>>
+  ) => Promise<boolean>;
 }
 
 interface AuthProviderProps {
@@ -32,12 +46,45 @@ function mapDomainUserToAuthUser(user: DomainUser): AuthUser {
     email: user.email.value,
     password: user.password.value,
     avatarUrl: user.avatarUrl,
+    latitude: user.latitude ?? null,
+    longitude: user.longitude ?? null,
   };
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const locationSyncAttemptedRef = useRef(false);
   const userUseCases = useMemo(() => makeUserUseCases(), []);
+
+  const syncUserLocation = useCallback(
+    async (userId: string) => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+
+        if (status !== 'granted') {
+          console.warn('Permissao de localizacao negada pelo usuario.');
+          return;
+        }
+
+        const position = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+
+        const latitude = Number(position.coords.latitude.toFixed(7));
+        const longitude = Number(position.coords.longitude.toFixed(7));
+
+        const updatedUser = await userUseCases.updateUser.execute(userId, {
+          latitude,
+          longitude,
+        });
+
+        setUser(mapDomainUserToAuthUser(updatedUser));
+      } catch (error) {
+        console.error('Erro ao sincronizar localizacao do usuario:', error);
+      }
+    },
+    [userUseCases]
+  );
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -101,7 +148,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const updateProfile = async (
-    data: Partial<Pick<AuthUser, 'name' | 'email' | 'password' | 'avatarUrl'>>
+    data: Partial<Pick<AuthUser, 'name' | 'email' | 'password' | 'avatarUrl' | 'latitude' | 'longitude'>>
   ): Promise<boolean> => {
     if (!user) {
       return false;
@@ -116,6 +163,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return false;
     }
   };
+
+  useEffect(() => {
+    if (!user) {
+      locationSyncAttemptedRef.current = false;
+      return;
+    }
+
+    if (!locationSyncAttemptedRef.current) {
+      locationSyncAttemptedRef.current = true;
+      syncUserLocation(user.id);
+    }
+  }, [user, syncUserLocation]);
 
   const isAuthenticated = !!user;
 

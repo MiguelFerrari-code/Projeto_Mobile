@@ -17,6 +17,8 @@ type UserProfileRow = {
   id: string;
   name: string | null;
   avatar_url: string | null;
+  latitude: number | string | null;
+  longitude: number | string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -25,6 +27,8 @@ type UserProfileInsertPayload = {
   id: string;
   name: string;
   avatar_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -32,6 +36,8 @@ type UserProfileInsertPayload = {
 type UserProfileUpdatePayload = {
   name?: string | null;
   avatar_url?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   updated_at: string;
 };
 
@@ -251,6 +257,14 @@ export class SupabaseUserRepository implements IUserRepository {
       profilePayload.avatar_url = data.avatarUrl ?? null;
     }
 
+    if (data.latitude !== undefined) {
+      profilePayload.latitude = data.latitude;
+    }
+
+    if (data.longitude !== undefined) {
+      profilePayload.longitude = data.longitude;
+    }
+
     if (Object.keys(profilePayload).length > 0) {
       profile = await this.upsertProfile(userId, profilePayload, {
         name: data.name ?? currentUser.name.value,
@@ -318,13 +332,17 @@ export class SupabaseUserRepository implements IUserRepository {
       (typeof authUser.user_metadata?.avatar_url === 'string'
         ? authUser.user_metadata.avatar_url
         : undefined);
+    const latitude = this.parseCoordinate(profileRow?.latitude);
+    const longitude = this.parseCoordinate(profileRow?.longitude);
 
     return User.create(
       authUser.id,
       Name.create(resolvedName),
       Email.create(resolvedEmail),
       Password.create(resolvedPassword),
-      avatarUrl ?? undefined
+      avatarUrl ?? undefined,
+      latitude,
+      longitude
     );
   }
 
@@ -410,6 +428,8 @@ export class SupabaseUserRepository implements IUserRepository {
       id: userId,
       name: resolvedName,
       avatar_url: data.avatar_url ?? null,
+      latitude: this.normalizeCoordinate(data.latitude) ?? null,
+      longitude: this.normalizeCoordinate(data.longitude) ?? null,
       created_at: now,
       updated_at: now,
     };
@@ -429,6 +449,14 @@ export class SupabaseUserRepository implements IUserRepository {
 
     if (data.avatar_url !== undefined) {
       payload.avatar_url = data.avatar_url;
+    }
+
+    if (data.latitude !== undefined) {
+      payload.latitude = this.normalizeCoordinate(data.latitude) ?? null;
+    }
+
+    if (data.longitude !== undefined) {
+      payload.longitude = this.normalizeCoordinate(data.longitude) ?? null;
     }
 
     return payload;
@@ -482,6 +510,28 @@ export class SupabaseUserRepository implements IUserRepository {
     }
 
     return !!(loginData.user ?? loginData.session);
+  }
+
+  private parseCoordinate(value?: number | string | null): number | null {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    const parsed = typeof value === 'number' ? value : parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  private normalizeCoordinate(value?: number | null): number | null | undefined {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    if (value === null) {
+      return null;
+    }
+
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
   }
 
   private resolvePasswordValue(password?: string): string {

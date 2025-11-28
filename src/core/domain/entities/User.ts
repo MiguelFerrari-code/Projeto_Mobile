@@ -8,7 +8,9 @@ export class User {
     readonly name: Name,
     readonly email: Email,
     readonly password: Password,
-    readonly avatarUrl?: string
+    readonly avatarUrl?: string,
+    readonly latitude?: number | null,
+    readonly longitude?: number | null
   ) {}
 
   static create(
@@ -16,8 +18,10 @@ export class User {
     name: Name,
     email: Email,
     password: Password,
-    avatarUrl?: string
+    avatarUrl?: string,
+    latitude?: number | null,
+    longitude?: number | null
   ): User {
-    return new User(id, name, email, password, avatarUrl);
+    return new User(id, name, email, password, avatarUrl, latitude, longitude);
   }
 }
