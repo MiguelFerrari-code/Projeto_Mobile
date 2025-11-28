@@ -4,6 +4,7 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
+    paddingBottom: 12,
   },
   header: {
     backgroundColor: '#FFFFFF',
@@ -32,42 +33,11 @@ export const styles = StyleSheet.create({
     height: 40,
     resizeMode: 'contain',
   },
-  searchContainer: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    marginTop: 15,
-    marginBottom: 15,
-    borderRadius: 25,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 3,
-  },
-  searchInput: {
-    flex: 1,
-    height: 45,
-    fontSize: 16,
-    color: '#333',
-  },
-  searchButton: {
-    padding: 8,
-  },
-  searchIcon: {
-    fontSize: 20,
-    color: '#4285F4',
-  },
   mapContainer: {
     flex: 1,
-    marginHorizontal: 20,
-    marginBottom: 100,
-    borderRadius: 15,
+    marginHorizontal: 0,
+    marginBottom: 0,
+    borderRadius: 0,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {
@@ -78,10 +48,29 @@ export const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  mapBackground: {
+  map: {
     flex: 1,
-    width: '100%',
-    height: '100%',
+  },
+  mapsButtonContainer: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+  },
+  mapsButton: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  mapsButtonText: {
+    color: '#4285F4',
+    fontWeight: 'bold',
+    fontSize: 13,
   },
   marker: {
     position: 'absolute',
@@ -148,5 +137,3 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-
