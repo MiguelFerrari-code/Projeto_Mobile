@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { styles } from './styles';
 import { useImageUpload } from '../../hooks/useImageUpload';
+import { persistLocalImage } from '../../utils/persistLocalImage';
 
 // Importando as imagens
 const logoHeader = require('../../assets/LogoCadastro.png');
@@ -76,8 +77,16 @@ export function EditarMedicamento({ navigation, route }: any) {
 
       if (fotoUri) {
         if (isLocalPhoto || fotoUri.startsWith('file:')) {
-          const { publicUrl } = await uploadFromUri(fotoUri);
-          fotoPublicUrl = publicUrl;
+          try {
+            const { publicUrl } = await uploadFromUri(fotoUri);
+            fotoPublicUrl = publicUrl;
+          } catch (uploadError) {
+            console.warn(
+              'Falha ao subir foto (provavelmente offline). Salvando foto localmente.',
+              uploadError
+            );
+            fotoPublicUrl = fotoUri;
+          }
         } else {
           fotoPublicUrl = fotoUri;
         }
@@ -113,9 +122,16 @@ export function EditarMedicamento({ navigation, route }: any) {
     setCameraVisible(true);
   };
 
-  const handleFotoTirada = (uri: string) => {
-    setFotoUri(uri);
-    setIsLocalPhoto(true);
+  const handleFotoTirada = async (uri: string) => {
+    try {
+      const persisted = await persistLocalImage(uri, 'medicamentos');
+      setFotoUri(persisted);
+    } catch (error) {
+      console.warn('Falha ao persistir foto localmente:', error);
+      setFotoUri(uri);
+    } finally {
+      setIsLocalPhoto(true);
+    }
   };
 
   return (

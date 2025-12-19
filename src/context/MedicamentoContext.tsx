@@ -10,6 +10,7 @@ import React, {
 import { makeMedicamentoUseCases } from '../core/factories/MakeMedicamentoUseCases';
 import { Medicamento } from '../core/domain/entities/Medicamento';
 import { useAuth } from './auth';
+import { SQLiteMedicamentoRepository } from '../core/infra/repositories/sqlite/sqliteMedicamentoRepository';
 
 export type MedicamentoInput = {
   nome: string;
@@ -64,7 +65,15 @@ export const MedicamentoProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [medicamentos, setMedicamentos] = useState<MedicamentoViewModel[]>([]);
   const [loading, setLoading] = useState(false);
-  const medicamentoUseCases = useMemo(() => makeMedicamentoUseCases(), []);
+
+  const medicamentoUseCases = useMemo(() => {
+    if (!user?.id) {
+      return null;
+    }
+
+    const repository = new SQLiteMedicamentoRepository(user.id);
+    return makeMedicamentoUseCases(repository);
+  }, [user?.id]);
 
   const mapDomainToView = useCallback((medicamento: Medicamento): MedicamentoViewModel => {
     return {
@@ -84,6 +93,11 @@ export const MedicamentoProvider = ({ children }: { children: ReactNode }) => {
 
   const sincronizarMedicamentos = useCallback(async () => {
     if (!user) {
+      setMedicamentos([]);
+      return;
+    }
+
+    if (!medicamentoUseCases) {
       setMedicamentos([]);
       return;
     }
@@ -122,18 +136,22 @@ export const MedicamentoProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('Usuario nao autenticado.');
       }
 
+      if (!medicamentoUseCases) {
+        throw new Error('Use cases nao inicializados.');
+      }
+
       const tempId = Date.now().toString();
       const domainMedicamento = buildDomainMedicamento(tempId, data);
 
       try {
         await medicamentoUseCases.adicionarMedicamento.execute(domainMedicamento);
-        await sincronizarMedicamentos();
+        setMedicamentos((current) => [mapDomainToView(domainMedicamento), ...current]);
       } catch (error) {
         console.error('Erro ao adicionar medicamento:', error);
         throw error;
       }
     },
-    [buildDomainMedicamento, medicamentoUseCases, sincronizarMedicamentos, user]
+    [buildDomainMedicamento, medicamentoUseCases, mapDomainToView, user]
   );
 
   const editarMedicamento = useCallback(
@@ -142,17 +160,23 @@ export const MedicamentoProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('Usuario nao autenticado.');
       }
 
+      if (!medicamentoUseCases) {
+        throw new Error('Use cases nao inicializados.');
+      }
+
       const domainMedicamento = buildDomainMedicamento(String(id), data);
 
       try {
         await medicamentoUseCases.editarMedicamento.execute(domainMedicamento);
-        await sincronizarMedicamentos();
+        setMedicamentos((current) =>
+          current.map((item) => (item.id === id ? mapDomainToView(domainMedicamento) : item))
+        );
       } catch (error) {
         console.error('Erro ao editar medicamento:', error);
         throw error;
       }
     },
-    [buildDomainMedicamento, medicamentoUseCases, sincronizarMedicamentos, user]
+    [buildDomainMedicamento, medicamentoUseCases, mapDomainToView, user]
   );
 
   const excluirMedicamento = useCallback(
@@ -161,15 +185,19 @@ export const MedicamentoProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('Usuario nao autenticado.');
       }
 
+      if (!medicamentoUseCases) {
+        throw new Error('Use cases nao inicializados.');
+      }
+
       try {
         await medicamentoUseCases.excluirMedicamento.execute(String(id));
-        await sincronizarMedicamentos();
+        setMedicamentos((current) => current.filter((item) => item.id !== id));
       } catch (error) {
         console.error('Erro ao excluir medicamento:', error);
         throw error;
       }
     },
-    [medicamentoUseCases, sincronizarMedicamentos, user]
+    [medicamentoUseCases, user]
   );
 
   useEffect(() => {
